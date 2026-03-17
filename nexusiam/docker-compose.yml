@@ -1,0 +1,172 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nexusiam-postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nexusiam}
+      POSTGRES_USER: ${POSTGRES_USER:-nexusiam_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-NexusIAM@2024!}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nexusiam_user} -d ${POSTGRES_DB:-nexusiam} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+    networks:
+      - nexusiam-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: nexusiam-redis
+    restart: unless-stopped
+    env_file:
+      - .env
+    command: redis-server --requirepass "${REDIS_PASSWORD:-NexusRedis@2024!}"
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-NexusRedis@2024!}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nexusiam-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: nexusiam-keycloak
+    restart: unless-stopped
+    env_file:
+      - .env
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-NexusKeycloak@2024!}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-nexusiam}
+      KC_DB_USERNAME: ${POSTGRES_USER:-nexusiam_user}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-NexusIAM@2024!}
+      KC_HTTP_PORT: 8080
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+    volumes:
+      - ./docker/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - nexusiam-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nexusiam-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3001}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://nexusiam_user:NexusIAM@2024!@postgres:5432/nexusiam}
+      REDIS_URL: ${REDIS_URL:-redis://:NexusRedis@2024!@redis:6379}
+      KEYCLOAK_URL: ${KEYCLOAK_URL:-http://keycloak:8080}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-nexusiam}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-nexusiam-backend}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-nexusiam-backend-secret-2024}
+      JWT_SECRET: ${JWT_SECRET:-NexusJWT@SuperSecret2024!}
+    volumes:
+      - plugin_data:/app/plugins
+      - jar_data:/app/external-jars
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    networks:
+      - nexusiam-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nexusiam-frontend
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - nexusiam-net
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: nexusiam-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - nexusiam-net
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: nexusiam-grafana
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-NexusGrafana@2024!}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - "3100:3000"
+    networks:
+      - nexusiam-net
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: nexusiam-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - nexusiam-net
+
+volumes:
+  postgres_data:
+  redis_data:
+  log_data:
+  grafana_data:
+  prometheus_data:
+
+networks:
+  nexusiam-net:
+    driver: bridge

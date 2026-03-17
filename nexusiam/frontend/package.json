@@ -1,0 +1,29 @@
+{
+  "name": "nexusiam-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.24.1",
+    "react-scripts": "5.0.1",
+    "axios": "^1.7.2",
+    "recharts": "^2.12.7",
+    "@headlessui/react": "^2.1.1",
+    "lucide-react": "^0.400.0",
+    "date-fns": "^3.6.0",
+    "react-hot-toast": "^2.4.1",
+    "react-hook-form": "^7.52.1",
+    "clsx": "^2.1.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test"
+  },
+  "browserslist": {
+    "production": [">0.2%", "not dead"],
+    "development": ["last 1 chrome version"]
+  },
+  "proxy": "http://backend:3001"
+}

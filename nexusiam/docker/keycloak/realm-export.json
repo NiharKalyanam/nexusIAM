@@ -1,0 +1,26 @@
+{
+  "realm": "nexusiam",
+  "enabled": true,
+  "displayName": "NexusIAM",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 28800,
+  "ssoSessionMaxLifespan": 86400,
+  "users": [
+    {
+      "username": "admin",
+      "email": "admin@nexusiam.io",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "System",
+      "lastName": "Admin",
+      "credentials": [{ "type": "password", "value": "Admin@2024!", "temporary": false }],
+      "realmRoles": ["nexusiam-admin"]
+    }
+  ]
+}
