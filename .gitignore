@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Node / frontend
+node_modules/
+dist/
+build/
+
+# Java
+*.class
+*.jar
+*.war
+target/
+out/
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+
+# OS files
+Thumbs.db
