@@ -3,10 +3,10 @@ name: NexusIAM CI
 on:
 push:
 branches:
-- main
+- master
 pull_request:
 branches:
-- main
+- master
 
 jobs:
 
@@ -84,4 +84,4 @@ steps:
 
   - name: Build
     run: npm run build --if-present
-```
+``` 
