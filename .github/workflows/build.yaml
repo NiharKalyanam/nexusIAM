@@ -34,12 +34,12 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 
-  backend:
-    name: Backend Build & Security
+  build:
+    name: Build & Security
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend
+        working-directory: nexusiam
     steps:
       - uses: actions/checkout@v4
 
@@ -56,24 +56,5 @@ jobs:
       - name: Run Tests
         run: npm test --if-present
 
-  frontend:
-    name: Frontend Build & Security
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Dependency Audit
-        run: npm audit --audit-level=high || true
-
-      - name: Build Frontend
+      - name: Build
         run: npm run build --if-present
