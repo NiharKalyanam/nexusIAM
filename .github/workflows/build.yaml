@@ -34,32 +34,46 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 
-  build:
-    name: Build & Security
+  backend:
+    name: Backend Build & Security
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nexusiam/backend
     steps:
       - uses: actions/checkout@v4
-
-      - name: Show repo structure
-        run: find . -not -path './.git/*' -type f | head -50
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Find and install dependencies
-        run: |
-          if [ -f package.json ]; then
-            npm install
-            npm audit --audit-level=high || true
-            npm test --if-present
-            npm run build --if-present
-          elif [ -f nexusiam/package.json ]; then
-            cd nexusiam && npm install
-            npm audit --audit-level=high || true
-            npm test --if-present
-            npm run build --if-present
-          else
-            echo "No package.json found - printing repo structure for debugging"
-            find . -name "package.json" -not -path "./.git/*"
-          fi
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Dependency Audit
+        run: npm audit --audit-level=high || true
+
+      - name: Run Tests
+        run: npm test --if-present
+
+  frontend:
+    name: Frontend Build & Security
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nexusiam/frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Dependency Audit
+        run: npm audit --audit-level=high || true
+
+      - name: Build
+        run: npm run build --if-present
