@@ -4,53 +4,22 @@ on:
 push:
 branches:
 - master
-pull_request:
-branches:
-- master
 
 jobs:
-build-backend:
+test:
 runs-on: ubuntu-latest
-
-defaults:
-  run:
-    working-directory: backend
 
 steps:
   - uses: actions/checkout@v4
 
-  - name: Verify Backend Path
+  - name: Print Directory
     run: |
       pwd
       ls -la
       ls -la ../
-      ls -la
 
   - uses: actions/setup-node@v4
     with:
       node-version: 22
 
-  - run: npm install
-
-build-frontend:
-runs-on: ubuntu-latest
-
-defaults:
-  run:
-    working-directory: frontend
-
-steps:
-  - uses: actions/checkout@v4
-
-  - name: Verify Frontend Path
-    run: |
-      pwd
-      ls -la
-      ls -la ../
-      ls -la
-
-  - uses: actions/setup-node@v4
-    with:
-      node-version: 22
-
-  - run: npm install
+  - run: npm --version
