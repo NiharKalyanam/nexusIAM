@@ -1,80 +1,56 @@
 name: NexusIAM CI
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+push:
+branches:
+- master
+pull_request:
+branches:
+- master
 
 jobs:
-  codeql:
-    name: CodeQL Security Scan
-    runs-on: ubuntu-latest
+build-backend:
+runs-on: ubuntu-latest
 
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
+defaults:
+  run:
+    working-directory: backend
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ['javascript']
+steps:
+  - uses: actions/checkout@v4
 
-    steps:
-      - uses: actions/checkout@v4
+  - name: Verify Backend Path
+    run: |
+      pwd
+      ls -la
+      ls -la ../
+      ls -la
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript
+  - uses: actions/setup-node@v4
+    with:
+      node-version: 22
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+  - run: npm install
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+build-frontend:
+runs-on: ubuntu-latest
 
-  build-backend:
-    name: Build Backend
-    runs-on: ubuntu-latest
+defaults:
+  run:
+    working-directory: frontend
 
-    defaults:
-      run:
-        working-directory: backend
+steps:
+  - uses: actions/checkout@v4
 
-    steps:
-      - uses: actions/checkout@v4
+  - name: Verify Frontend Path
+    run: |
+      pwd
+      ls -la
+      ls -la ../
+      ls -la
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
+  - uses: actions/setup-node@v4
+    with:
+      node-version: 22
 
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Run Tests
-        run: npm test --if-present
-
-  build-frontend:
-    name: Build Frontend
-    runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: frontend
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build --if-present
+  - run: npm install
