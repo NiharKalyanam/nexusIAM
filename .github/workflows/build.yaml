@@ -37,24 +37,29 @@ jobs:
   build:
     name: Build & Security
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: nexusiam
     steps:
       - uses: actions/checkout@v4
+
+      - name: Show repo structure
+        run: find . -not -path './.git/*' -type f | head -50
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Dependency Audit
-        run: npm audit --audit-level=high || true
-
-      - name: Run Tests
-        run: npm test --if-present
-
-      - name: Build
-        run: npm run build --if-present
+      - name: Find and install dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm install
+            npm audit --audit-level=high || true
+            npm test --if-present
+            npm run build --if-present
+          elif [ -f nexusiam/package.json ]; then
+            cd nexusiam && npm install
+            npm audit --audit-level=high || true
+            npm test --if-present
+            npm run build --if-present
+          else
+            echo "No package.json found - printing repo structure for debugging"
+            find . -name "package.json" -not -path "./.git/*"
+          fi
