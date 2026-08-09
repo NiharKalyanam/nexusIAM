@@ -19,6 +19,23 @@ const MOCK_USERS = [
   { email: 'test@example.com',  firstName: 'Test',   lastName: 'User',    role: 'Read-only',     note: 'Auto-provisioned on first login' },
 ];
 
+const DEFAULT_ACS_URL = 'http://localhost:3001/api/v1/auth/saml/callback';
+
+function getSafeAcsUrl(rawAcs) {
+  if (!rawAcs) return DEFAULT_ACS_URL;
+
+  try {
+    const parsed = new URL(rawAcs);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.toString();
+    }
+  } catch (e) {
+    // ignore invalid URL and fall back
+  }
+
+  return DEFAULT_ACS_URL;
+}
+
 function buildMockSamlResponse(user, acsUrl) {
   // Build a minimal SAML Response XML (not cryptographically signed — test only)
   const id        = '_mock_' + Math.random().toString(36).slice(2);
@@ -61,7 +78,7 @@ function buildMockSamlResponse(user, acsUrl) {
 
 export default function MockIdpPage() {
   const params  = new URLSearchParams(window.location.search);
-  const acsUrl  = decodeURIComponent(params.get('acs') || 'http://localhost:3001/api/v1/auth/saml/callback');
+  const acsUrl  = getSafeAcsUrl(params.get('acs'));
   const tenant  = params.get('tenant') || 'demo';
 
   const [selected, setSelected] = useState(MOCK_USERS[0].email);
