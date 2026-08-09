@@ -11,6 +11,36 @@
   "bruteForceProtected": true,
   "accessTokenLifespan": 28800,
   "ssoSessionMaxLifespan": 86400,
+  "clients": [
+    {
+      "clientId": "nexusiam-frontend",
+      "name": "NexusIAM Frontend",
+      "enabled": true,
+      "publicClient": true,
+      "redirectUris": ["http://localhost:3000/*", "http://localhost/*"],
+      "webOrigins": ["*"],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "nexusiam-backend",
+      "name": "NexusIAM Backend",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "nexusiam-backend-secret-2024",
+      "serviceAccountsEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "protocol": "openid-connect"
+    }
+  ],
+  "roles": {
+    "realm": [
+      { "name": "nexusiam-admin", "description": "NexusIAM Administrator" },
+      { "name": "nexusiam-user", "description": "NexusIAM Standard User" },
+      { "name": "nexusiam-auditor", "description": "NexusIAM Auditor" }
+    ]
+  },
   "users": [
     {
       "username": "admin",
