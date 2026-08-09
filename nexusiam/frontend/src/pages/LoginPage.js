@@ -157,7 +157,7 @@ export default function LoginPage() {
                   <div style={{ flex: 1, height: 1, background: isLight ? '#e5e7eb' : '#1e2a3a' }} />
                 </div>
                 <a
-                  href={`/api/v1/auth/saml/login?tenant=${form.tenantSlug || 'demo'}`}
+                  href={`/api/v1/auth/saml/login?tenant=${encodeURIComponent(form.tenantSlug || 'demo')}`}
                   style={{
                     display: 'block', padding: '10px 0',
                     background: isLight ? '#f8fafc' : '#0d1525',
